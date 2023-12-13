@@ -1,37 +1,48 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import f_oneway
 
-# Create a DataFrame with dummy data
-data = {
-    'independent_var': [1, 2, 3, 4, 5],
-    'dependent_var1': [2, 4, 6, 8, 10],
-    'dependent_var2': [1, 3, 5, 7, 9]
-}
-df = pd.DataFrame(data)
+# Assuming you have a DataFrame df with your data
+df = pd.read_csv('your_data.csv')  # replace 'your_data.csv' with your actual data file
 
 # Specify your independent variable
-independent_var = 'independent_var'
+independent_var = 'anti-social behavior'
 
 # Specify your dependent variables
-dependent_vars = ['dependent_var1', 'dependent_var2']
+dependent_vars = ['Physical Aggression', 'Social Aggression', 'Rule-Breaking']
+
+# Create a new column that is the sum of the dependent variables
+df['combined'] = df[dependent_vars].sum(axis=1)
 
 # Calculate correlation
-correlation = df[[independent_var] + dependent_vars].corr()
+correlation = df[[independent_var, 'combined']].corr()
 
 # Display correlation
-print(correlation)
+print("Correlation:\n", correlation)
 
 # Plot correlation
 sns.heatmap(correlation, annot=True, cmap='coolwarm')
 
-# Plot linear regression for each dependent variable
-for dependent_var in dependent_vars:
-    sns.regplot(x=independent_var, y=dependent_var, data=df)
-    plt.show()
-    
-    # Plot linear regression for each dependent variable
-for i, dependent_var in enumerate(dependent_vars):
-    sns.regplot(x=independent_var, y=dependent_var, data=df)
-    plt.savefig(f'regression_plot_{i}.png')  # saves the plot as an image file
-    plt.show()
+# Plot linear regression for the combined dependent variable
+sns.regplot(x=independent_var, y='combined', data=df)
+plt.savefig('regression_plot_combined.png')  # saves the plot as an image file
+plt.show()
+
+# Calculate descriptive statistics
+desc_stats = df.describe()
+
+# Calculate variance
+variance = df.var()
+
+# Display descriptive statistics and variance
+print("\nDescriptive Statistics:\n", desc_stats)
+print("\nVariance:\n", variance)
+
+# Perform one-way ANOVA test
+f_val, p_val = f_oneway(df['Physical Aggression'], df['Social Aggression'], df['Rule-Breaking'])
+
+# Display F-value and p-value
+print("\nOne-way ANOVA")
+print("F =", f_val)
+print("p =", p_val)
